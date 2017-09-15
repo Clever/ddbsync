@@ -8,6 +8,7 @@
 package ddbsync
 
 import (
+	"errors"
 	"log"
 	"strings"
 	"sync"
@@ -57,6 +58,21 @@ func (m *Mutex) Lock() {
 
 		time.Sleep(m.LockReattemptWait)
 	}
+}
+
+var ErrLockAlreadyHeld = errors.New("lock already held")
+
+// AttemptLock will try to write the lock once.
+func (m *Mutex) AttemptLock() error {
+	m.PruneExpired()
+	err := m.db.Put(m.Name, time.Now().Unix())
+	if err == nil {
+		return
+	}
+	if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
+		return ErrLockAlreadyHeld
+	}
+	return err
 }
 
 // Unlock will delete an item in a DynamoDB table.
