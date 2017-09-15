@@ -3,6 +3,8 @@ package ddbsync
 import (
 	"sync"
 	"time"
+
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 )
 
 type LockServicer interface {
@@ -18,6 +20,15 @@ var _ LockServicer = (*LockService)(nil) // Forces compile time checking of the 
 func NewLockService(tableName string, region string, endpoint string, disableSSL bool) *LockService {
 	return &LockService{
 		db: NewDatabase(tableName, region, endpoint, disableSSL),
+	}
+}
+
+func NewLockServiceFromDDBAPI(ddb dynamodbiface.DynamoDBAPI, tableName string) *LockService {
+	return &LockService{
+		db: &database{
+			client:    ddb,
+			tableName: tableName,
+		},
 	}
 }
 
