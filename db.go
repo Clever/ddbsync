@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/zencoder/ddbsync/models"
 )
 
@@ -23,6 +24,13 @@ func NewDatabase(tableName string, region string, endpoint string, disableSSL bo
 			Region:     &region,
 			DisableSSL: &disableSSL,
 		})),
+		tableName: tableName,
+	}
+}
+
+func NewDatabaseFromDDBAPI(ddb dynamodbiface.DynamoDBAPI, tableName string) DBer {
+	return &database{
+		client:    ddb,
 		tableName: tableName,
 	}
 }

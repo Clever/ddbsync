@@ -67,7 +67,7 @@ func (m *Mutex) AttemptLock() error {
 	m.PruneExpired()
 	err := m.db.Put(m.Name, time.Now().Unix())
 	if err == nil {
-		return
+		return nil
 	}
 	if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
 		return ErrLockAlreadyHeld
